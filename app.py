@@ -21,7 +21,7 @@ if prompt := st.chat_input("What is up?"):
     with st.chat_message("user"):
         st.markdown(prompt)
 
-    with st.chat_message("ai"):
+    with st.chat_message("ai", avatar="♊️"):
         stream = st.session_state["chat_model"].send_message(prompt, stream=True)
         chunks = []
         response = ""
