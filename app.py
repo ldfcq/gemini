@@ -21,7 +21,10 @@ if prompt := st.chat_input("What is up?"):
     with st.chat_message("user"):
         st.markdown(prompt)
 
-    with st.chat_message("assistant"):
+    with st.chat_message("ai"):
         stream = st.session_state["chat_model"].send_message(prompt, stream=True)
-        response = st.write_stream(stream)
-    st.session_state.messages.append({"role": "assistant", "content": response})
+        response = ""
+        for chunk in stream:
+            response += chunk.text
+            st.write_stream(chunk.text)
+    st.session_state.messages.append({"role": "model", "content": response})
