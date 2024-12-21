@@ -36,9 +36,9 @@ def check_password():
 if not check_password():
     st.stop()  # Do not continue if check_password is not True.
 
-if "chat_model" not in st.session_state:
+if "chat_session" not in st.session_state:
     model = genai.GenerativeModel("gemini-1.5-flash")
-    st.session_state["chat_model"] = model.start_chat()
+    st.session_state["chat_session"] = model.start_chat()
 
 if "messages" not in st.session_state:
     st.session_state.messages = []
@@ -50,17 +50,21 @@ for message in st.session_state.messages:
     with st.chat_message(message["role"], avatar=avatar):
         st.markdown(message["content"])
 
+
+def generate(chat_session, prompt):
+    response = chat_session.send_message(prompt, stream=True)
+    for chunk in response:
+        yield chunk.text
+
+
 if prompt := st.chat_input("您的输入"):
     st.session_state.messages.append({"role": "user", "content": prompt})
     with st.chat_message("user", avatar="👤"):
         st.markdown(prompt)
 
     with st.chat_message("ai", avatar="♊️"):
-        stream = st.session_state["chat_model"].send_message(prompt, stream=True)
-        chunks = []
-        response = ""
-        for chunk in stream:
-            response += chunk.text
-            chunks.append(chunk.text)
-        st.write_stream(chunks)
+        response = st.write_stream(generate(st.session_state["chat_session"], prompt))
+
     st.session_state.messages.append({"role": "model", "content": response})
+
+    st.markdown(f"最终结果：{response}")
